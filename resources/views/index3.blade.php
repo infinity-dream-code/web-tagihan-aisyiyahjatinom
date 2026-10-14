@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Cek Tagihan | Kuningan Al Muqoddasah</title>
+<title>Cek Tagihan | SD Aisyiyah Jatinom</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="description" content="Cek tagihan siswa Kuningan Al Muqoddasah">
+<meta name="description" content="Cek tagihan siswa SD Aisyiyah Jatinom">
 <meta name="theme-color" content="#14532d">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kuningan Al Muqoddasah">
+<meta name="apple-mobile-web-app-title" content="SD Aisyiyah Jatinom">
 <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-<link rel="icon" type="image/png" href="{{ asset('Muqoddasah.png') }}">
-<link rel="apple-touch-icon" href="{{ asset('Muqoddasah.png') }}">
+<link rel="icon" type="image/png" href="{{ asset('aisyiyah.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('aisyiyah.png') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -287,9 +287,9 @@ h1{font-size:1.15rem}
 <div class="wrap">
   <div class="topbar">
     <div class="brand-wrap">
-      <img src="{{ asset('Muqoddasah.png') }}" alt="Kuningan Al Muqoddasah" class="brand-logo">
+      <img src="{{ asset('aisyiyah.png') }}" alt="SD Aisyiyah Jatinom" class="brand-logo">
       <div>
-        <div class="brand">Kuningan Al Muqoddasah</div>
+        <div class="brand">SD Aisyiyah Jatinom</div>
         <h1>Cek tagihan</h1>
       </div>
     </div>
@@ -312,7 +312,7 @@ h1{font-size:1.15rem}
       <div class="form-grid">
         <div class="field">
           <label>Nomor Induk Siswa <em>*</em></label>
-          <input type="text" name="no_cust" id="noCust" inputmode="numeric" autocomplete="username" placeholder="777723xxx" value="{{ old('no_cust', $va ?? '') }}" required>
+          <input type="text" name="no_cust" id="noCust" inputmode="numeric" autocomplete="username" placeholder="752088xxx" value="{{ old('no_cust', $va ?? '') }}" required>
         </div>
         <div class="field">
           <label>Password <em>*</em></label>
@@ -604,7 +604,7 @@ h1{font-size:1.15rem}
     @endif
   @endif
 
-  <div class="footer">© {{ date('Y') }} Kuningan Al Muqoddasah. All rights reserved.</div>
+  <div class="footer">© {{ date('Y') }} SD Aisyiyah Jatinom. All rights reserved.</div>
 </div>
 
 <div id="detailModal" class="modal-bg">
@@ -653,8 +653,8 @@ h1{font-size:1.15rem}
     </div>
     <div class="modal-body">
       <div class="install-hero">
-        <img src="{{ asset('Muqoddasah.png') }}" alt="Kuningan Al Muqoddasah">
-        <h4>Kuningan Al Muqoddasah</h4>
+        <img src="{{ asset('aisyiyah.png') }}" alt="SD Aisyiyah Jatinom">
+        <h4>SD Aisyiyah Jatinom</h4>
         <p id="installModalText">Pasang aplikasi ke perangkat Anda agar lebih cepat dibuka dan mudah diakses.</p>
       </div>
     </div>
@@ -725,7 +725,7 @@ h1{font-size:1.15rem}
         @csrf
         <div class="field">
           <label>Nomor Induk Siswa <em>*</em></label>
-          <input type="text" name="no_cust" id="maNoCust" placeholder="777723xxx" required autocomplete="username">
+          <input type="text" name="no_cust" id="maNoCust" placeholder="752088xxx" required autocomplete="username">
         </div>
         <div class="field">
           <label>Password <em>*</em></label>
@@ -1293,9 +1293,9 @@ function formatRp(n) {
 function formatNovaDisplay(va) {
   let n = String(va ?? '').replace(/\s+/g, '');
   if (!n || n === '-') return '-';
-  n = n.replace(/^(777723|797777|96240|797783|757777|797766|751000)/, '');
+  n = n.replace(/^(752088|777723|797777|96240|797783|757777|797766|751000)/, '');
   n = n.replace(/^0+/, '') || n;
-  return n ? ('777723' + n) : '-';
+  return n ? ('752088' + n) : '-';
 }
 
 function esc(s) {
@@ -1617,7 +1617,7 @@ async function prosesPembayaran() {
           <div class="va-number" id="vaNumberText">${esc(va)}</div>
           <button type="button" class="btn-copy" onclick="copyVa()">Salin nomor VA</button>
           <p class="va-meta">Total: <b>${formatRp(total)}</b></p>
-          <p class="va-help">Bayar ke nomor VA di atas (kode bank 777723).</p>
+          <p class="va-help">Bayar ke nomor VA di atas (kode bank 752088).</p>
         </div>`;
       const actions = document.getElementById('payActions');
       if (actions) {

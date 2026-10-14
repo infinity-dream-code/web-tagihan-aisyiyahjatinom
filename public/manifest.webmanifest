@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Cek & Bayar Tagihan - Kuningan Al Muqoddasah",
-  "short_name": "Al Muqoddasah",
-  "description": "Cek dan bayar tagihan siswa Kuningan Al Muqoddasah",
+  "name": "Cek & Bayar Tagihan - SD Aisyiyah Jatinom",
+  "short_name": "SD Aisyiyah Jatinom",
+  "description": "Cek dan bayar tagihan siswa SD Aisyiyah Jatinom",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
@@ -21,13 +21,13 @@
   ],
   "icons": [
     {
-      "src": "/Muqoddasah.png",
+      "src": "/aisyiyah.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Muqoddasah.png",
+      "src": "/aisyiyah.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "maskable"

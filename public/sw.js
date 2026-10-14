@@ -1,12 +1,12 @@
-/* Kuningan Al Muqoddasah PWA service worker */
-const CACHE_VERSION = 'al-muqoddasah-v1';
+/* SD Aisyiyah Jatinom PWA service worker */
+const CACHE_VERSION = 'aisyiyah-jatinom-v1';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/manifest.webmanifest',
-  '/Muqoddasah.png',
+  '/aisyiyah.png',
 ];
 
 self.addEventListener('install', (event) => {

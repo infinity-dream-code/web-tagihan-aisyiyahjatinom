@@ -5,7 +5,7 @@ if (!extension_loaded('gd')) {
     exit(1);
 }
 
-$src = dirname(__DIR__) . '/Muqoddasah.png';
+$src = dirname(__DIR__) . '/aisyiyah.png';
 $dir = __DIR__;
 
 if (!is_dir($dir)) {
