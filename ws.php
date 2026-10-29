@@ -206,11 +206,7 @@ class Tagihan
 
     public function cekTagihanByVAPw($va_number, $password, $tahun_akademik = null)
     {
-        $num2nd = $this->stripVa($va_number);
-
-        $stmtUser = $this->db->prepare("SELECT userlogin, kunci FROM sm_user WHERE userlogin = :userlogin LIMIT 1");
-        $stmtUser->execute([':userlogin' => $num2nd]);
-        $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+        $user = $this->findUserByVa($va_number);
         if (!$user || $user['kunci'] !== sha1($password)) {
             return null;
         }
@@ -223,25 +219,63 @@ class Tagihan
         return $this->attachTagihan($siswa, $va_number, $tahun_akademik);
     }
 
+    private function vaPrefixes()
+    {
+        $prefixes = ['752088', '777723', '797777', '96240', '797783', '751000', '797766', '757777'];
+        usort($prefixes, function ($a, $b) {
+            return strlen($b) <=> strlen($a);
+        });
+
+        return $prefixes;
+    }
+
     private function stripVa($va_number)
     {
-        $va_number = preg_replace('/\s+/', '', (string) $va_number);
-
-        foreach (['752088', '777723', '797777', '96240', '797783', '751000', '797766', '757777'] as $prefix) {
-            if (strpos($va_number, $prefix) === 0) {
-                $va_number = substr($va_number, strlen($prefix));
+        $va = preg_replace('/\D+/', '', (string) $va_number);
+        $prefixes = $this->vaPrefixes();
+        for ($i = 0; $i < 4; $i++) {
+            $hit = false;
+            foreach ($prefixes as $prefix) {
+                if (strpos($va, $prefix) === 0 && strlen($va) > strlen($prefix)) {
+                    $va = substr($va, strlen($prefix));
+                    $hit = true;
+                    break;
+                }
+            }
+            if (!$hit) {
                 break;
             }
         }
+        $trimmed = ltrim($va, '0');
 
-        $trimmed = ltrim($va_number, '0');
+        return $trimmed !== '' ? $trimmed : $va;
+    }
 
-        return $trimmed !== '' ? $trimmed : $va_number;
+    private function findUserByVa($va_number)
+    {
+        $trimmed = $this->stripVa($va_number);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $sql = "SELECT userlogin, kunci FROM sm_user
+            WHERE TRIM(userlogin) = ?
+               OR TRIM(LEADING '0' FROM TRIM(userlogin)) = ?
+               OR CAST(TRIM(userlogin) AS UNSIGNED) = ?
+            LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$trimmed, $trimmed, (int) $trimmed]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     private function getSiswaByVa($va_number)
     {
-        $num2nd = $this->stripVa($va_number);
+        $trimmed = $this->stripVa($va_number);
+        if ($trimmed === '') {
+            return null;
+        }
+
         $sql = "
         SELECT 
             c.CUSTID AS id,
@@ -252,16 +286,24 @@ class Tagihan
             c.DESC02 AS kelas,
             c.CODE03 AS kode_jurusan,
             c.DESC03 AS jurusan,
+            c.DESC03 AS kelompok,
             c.DESC04 AS tahun_akademik,
+            c.DESC04 AS angkatan,
             c.DESC05 AS alamat,
             c.GENUS AS orangtua,
             c.LastUpdate AS updated_at
         FROM scctcust c
-        WHERE c.NOCUST = :nocust
+        WHERE TRIM(c.NOCUST) = ?
+           OR TRIM(c.NUM2ND) = ?
+           OR TRIM(LEADING '0' FROM TRIM(c.NOCUST)) = ?
+           OR TRIM(LEADING '0' FROM TRIM(c.NUM2ND)) = ?
+           OR CAST(TRIM(c.NOCUST) AS UNSIGNED) = ?
+           OR CAST(TRIM(c.NUM2ND) AS UNSIGNED) = ?
         LIMIT 1
     ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([':nocust' => $num2nd]);
+        $num = (int) $trimmed;
+        $stmt->execute([$trimmed, $trimmed, $trimmed, $trimmed, $num, $num]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
@@ -269,11 +311,22 @@ class Tagihan
     {
         $num2nd = $siswa['no_cust'];
 
-        $sqlSaldo = "SELECT SALDO FROM v_saldo_va WHERE NOCUST = :nocust LIMIT 1";
-        $stmtSaldo = $this->db->prepare($sqlSaldo);
-        $stmtSaldo->execute([':nocust' => $num2nd]);
-        $saldoRow = $stmtSaldo->fetch(PDO::FETCH_ASSOC);
-        $saldo = $saldoRow['SALDO'] ?? 0;
+        $saldo = 0;
+        $nocustCandidates = array_values(array_unique(array_filter([
+            $num2nd,
+            ltrim((string) $num2nd, '0'),
+            str_pad(ltrim((string) $num2nd, '0'), 10, '0', STR_PAD_LEFT),
+        ])));
+        foreach ($nocustCandidates as $nocustTry) {
+            $sqlSaldo = "SELECT SALDO FROM v_saldo_va WHERE TRIM(NOCUST) = :nocust OR TRIM(LEADING '0' FROM TRIM(NOCUST)) = :nocust2 LIMIT 1";
+            $stmtSaldo = $this->db->prepare($sqlSaldo);
+            $stmtSaldo->execute([':nocust' => $nocustTry, ':nocust2' => ltrim((string) $nocustTry, '0') ?: $nocustTry]);
+            $saldoRow = $stmtSaldo->fetch(PDO::FETCH_ASSOC);
+            if ($saldoRow) {
+                $saldo = $saldoRow['SALDO'] ?? 0;
+                break;
+            }
+        }
 
         $siswa['va_number'] = $va_number;
         $siswa['saldo'] = $saldo;

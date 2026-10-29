@@ -80,7 +80,21 @@ class MultiAccountService
 
         $accounts = $result['data']['accounts'] ?? [];
 
-        return collect(is_array($accounts) ? $accounts : []);
+        return self::formatAccountList($accounts);
+    }
+
+    private static function formatAccountList($accounts): Collection
+    {
+        return collect(is_array($accounts) ? $accounts : [])->map(function ($acc) {
+            if (! is_array($acc)) {
+                return $acc;
+            }
+            $acc['va_display'] = TagihanController::formatNova(
+                $acc['va_display'] ?? $acc['no_cust'] ?? $acc['va_number'] ?? ''
+            );
+
+            return $acc;
+        });
     }
 
     /**
@@ -93,13 +107,27 @@ class MultiAccountService
         string $password,
         string $newAcademicYear
     ): array {
-        $result = self::postWs('multi-akun-tambah', [
+        $payload = [
             'active_va' => TagihanController::normalizeVa($activeVa),
             'active_tahun_akademik' => $activeAcademicYear,
-            'va' => $newVa,
             'password' => $password,
             'tahun_akademik' => $newAcademicYear,
-        ]);
+        ];
+
+        $candidates = TagihanController::vaCandidates($newVa);
+        if (! $candidates) {
+            $candidates = [preg_replace('/\s+/', '', $newVa)];
+        }
+
+        $result = ['status' => false, 'message' => 'Gagal menambahkan multi akun'];
+        foreach ($candidates as $candidate) {
+            $try = self::postWs('multi-akun-tambah', array_merge($payload, ['va' => $candidate]));
+            if (! empty($try['status'])) {
+                $result = $try;
+                break;
+            }
+            $result = $try;
+        }
 
         if (empty($result['status'])) {
             return [
@@ -114,7 +142,7 @@ class MultiAccountService
             'status' => true,
             'message' => $result['message'] ?? 'Akun berhasil ditambahkan',
             'group_id' => $data['group_id'] ?? null,
-            'members' => collect($data['accounts'] ?? []),
+            'members' => self::formatAccountList($data['accounts'] ?? []),
             'active_no_cust' => $data['active_no_cust'] ?? TagihanController::normalizeVa($activeVa),
         ];
     }
@@ -153,8 +181,8 @@ class MultiAccountService
                 'message' => $result['message'] ?? 'Berhasil beralih akun',
                 'data' => $data,
             ],
-            'accounts' => $accounts,
-            'va_display' => $data['va_number'] ?? $data['no_cust'] ?? $targetVa,
+            'accounts' => self::formatAccountList($accounts->all()),
+            'va_display' => TagihanController::formatNova($data['va_number'] ?? $data['no_cust'] ?? $targetVa),
             'group_id' => $groupId,
         ];
     }
@@ -182,7 +210,7 @@ class MultiAccountService
             'status' => true,
             'message' => $result['message'] ?? 'Akun berhasil dihapus dari multi akun',
             'group_id' => $data['group_id'] ?? null,
-            'members' => collect($data['accounts'] ?? []),
+            'members' => self::formatAccountList($data['accounts'] ?? []),
             'active_no_cust' => $data['active_no_cust'] ?? TagihanController::normalizeVa($activeVa),
             'removed_no_cust' => $data['removed_no_cust'] ?? TagihanController::normalizeVa($targetVa),
         ];
