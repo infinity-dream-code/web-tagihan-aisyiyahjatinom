@@ -678,4 +678,148 @@ class Tagihan
 
         return ((int) $value === 1) ? 1 : 0;
     }
+
+    /**
+     * Kredit saldo VA dari pembayaran QRIS.
+     * Daftarkan path qris-topup-paid di ws/index.php server:
+     *   $in = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+     *   $out = $tagihan->creditQrisTopup($in['vano'] ?? '', $in['amount'] ?? 0, $in['transactionQrId'] ?? '');
+     *   echo json_encode($out);
+     */
+    public function creditQrisTopup($vano, $amount, $transactionQrId)
+    {
+        $amount = (int) $amount;
+        $qrisId = trim((string) $transactionQrId);
+        if ($amount <= 0) {
+            return ['status' => false, 'message' => 'Nominal top up tidak valid'];
+        }
+        if ($qrisId === '') {
+            return ['status' => false, 'message' => 'transactionQrId wajib diisi'];
+        }
+
+        $siswa = $this->getSiswaByVa($vano);
+        if (!$siswa) {
+            return ['status' => false, 'message' => 'Siswa tidak ditemukan untuk VA tersebut'];
+        }
+
+        $custid = $siswa['id'];
+        if ($this->qrisAlreadyCredited($qrisId)) {
+            return [
+                'status' => true,
+                'message' => 'Top up sudah tercatat',
+                'data' => ['custid' => $custid, 'amount' => $amount, 'duplicate' => true],
+            ];
+        }
+
+        $transno = 'QRIS'.date('YmdHis').substr(preg_replace('/\D+/', '', $qrisId).'0000', 0, 4);
+        $now = date('Y-m-d H:i:s');
+        $payload = [
+            'CUSTID' => $custid,
+            'NOREFF' => $qrisId,
+            'TRXDATE' => $now,
+            'KDCHANNEL' => 11,
+            'KREDIT' => $amount,
+            'DEBET' => 0,
+            'METODE' => 'QRIS',
+            'TRANSNO' => $transno,
+            'BILLTARGET' => 'TOP UP QRIS',
+            'REFFBANK' => '88',
+            'FIDBANK' => 'QRIS',
+        ];
+
+        try {
+            $this->insertExistingColumns('sccttran', $payload);
+        } catch (Exception $e) {
+            $this->logVa('creditQrisTopup sccttran failed', ['error' => $e->getMessage(), 'vano' => $vano]);
+            return ['status' => false, 'message' => 'Gagal mencatat kredit saldo'];
+        }
+
+        try {
+            $this->insertExistingColumns('sm_topup', [
+                'CUSTID' => $custid,
+                'NOMINAL' => $amount,
+                'TRXDATE' => $now,
+                'user' => 'QRIS',
+                'TOPUPNO' => $qrisId,
+                'Keterangan' => 'Top up QRIS',
+            ]);
+        } catch (Exception $e) {
+            $this->logVa('creditQrisTopup sm_topup skipped', ['error' => $e->getMessage()]);
+        }
+
+        return [
+            'status' => true,
+            'message' => 'Top up saldo berhasil',
+            'data' => [
+                'custid' => $custid,
+                'amount' => $amount,
+                'vano' => $vano,
+                'transactionQrId' => $qrisId,
+            ],
+        ];
+    }
+
+    private function qrisAlreadyCredited($qrisId)
+    {
+        foreach (['NOREFF', 'TRANSNO'] as $col) {
+            if (!$this->tableHasColumn('sccttran', $col)) {
+                continue;
+            }
+            try {
+                $stmt = $this->db->prepare("SELECT CUSTID FROM sccttran WHERE {$col} = ? LIMIT 1");
+                $stmt->execute([$qrisId]);
+                if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+                    return true;
+                }
+            } catch (Exception $e) {
+                $this->logVa('qrisAlreadyCredited failed', ['col' => $col, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return false;
+    }
+
+    private function tableHasColumn($table, $column)
+    {
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM {$table} LIKE ?");
+            $stmt->execute([$column]);
+            return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function tableExists($table)
+    {
+        try {
+            $stmt = $this->db->query('SHOW TABLES LIKE '.$this->db->quote($table));
+            return (bool) $stmt->fetch(PDO::FETCH_NUM);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function insertExistingColumns($table, array $payload)
+    {
+        if (!$this->tableExists($table)) {
+            throw new Exception("Tabel {$table} tidak ada");
+        }
+
+        $filtered = [];
+        foreach ($payload as $column => $value) {
+            if ($this->tableHasColumn($table, $column)) {
+                $filtered[$column] = $value;
+            }
+        }
+        if (!$filtered) {
+            throw new Exception("Tidak ada kolom yang cocok di {$table}");
+        }
+
+        $cols = array_keys($filtered);
+        $placeholders = implode(', ', array_fill(0, count($cols), '?'));
+        $sql = 'INSERT INTO '.$table.' ('.implode(', ', $cols).') VALUES ('.$placeholders.')';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array_values($filtered));
+    }
 }

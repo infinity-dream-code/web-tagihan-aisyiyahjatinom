@@ -40,6 +40,7 @@ if ('serviceWorker' in navigator) {
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 @endif
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -116,6 +117,14 @@ html.dark .submit-btn{color:#052e16}
 .btn-copy-nova{flex-shrink:0;min-width:34px;height:34px;padding:0 8px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .15s,border .15s}
 .btn-copy-nova:hover{background:var(--accent-soft);border-color:var(--accent)}
 .btn-copy-nova span{font-size:11px;font-weight:700}
+.btn-topup{flex-shrink:0;min-height:34px;padding:0 10px;border-radius:9px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-topup:hover{background:var(--accent);color:#fff}
+html.dark .btn-topup:hover{color:#052e16}
+.qris-wrap{text-align:center;padding:.35rem 0}
+.qris-wrap canvas,.qris-wrap img{width:220px;height:220px;margin:0 auto;display:block;background:#fff;border-radius:12px;padding:8px}
+.qris-amount{font-size:1.15rem;font-weight:700;color:var(--accent);margin:.65rem 0 .25rem}
+.qris-status{font-size:13px;color:var(--text2);margin:0}
+.qris-hint{font-size:12px;color:var(--text3);line-height:1.5;margin:.5rem 0 0}
 .btn-copy{min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer}
 .btn-copy:hover{background:var(--accent);color:#fff}
 html.dark .btn-copy:hover{color:#052e16}
@@ -404,7 +413,13 @@ h1{font-size:1.15rem}
           <div class="sf"><label>Kelas</label><p>{{ $result['data']['kelas'] ?? '-' }}</p></div>
           <div class="sf"><label>Kelompok</label><p>{{ $kelompokSiswa }}</p></div>
           <div class="sf"><label>Angkatan / Tahun masuk</label><p>{{ $angkatanSiswa }}</p></div>
-          <div class="sf"><label>Saldo VA</label><p>Rp {{ number_format($result['data']['saldo'] ?? 0, 0, ',', '.') }}</p></div>
+          <div class="sf">
+            <label>Saldo VA</label>
+            <div class="nova-row">
+              <p id="saldoVaText">Rp {{ number_format($result['data']['saldo'] ?? 0, 0, ',', '.') }}</p>
+              <button type="button" class="btn-topup" onclick="openTopupModal()">Top up</button>
+            </div>
+          </div>
           <div class="sf">
             <label>NOVA</label>
             <div class="nova-row">
@@ -679,6 +694,39 @@ h1{font-size:1.15rem}
   </div>
 </div>
 @endunless
+
+<div id="topupModal" class="modal-bg">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-head">
+      <h3>Top up saldo VA</h3>
+      <button class="modal-x" onclick="closeTopupModal()" aria-label="Tutup" type="button">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="topupFormWrap">
+        <div class="field" style="margin-bottom:0">
+          <label>Nominal top up <em>*</em></label>
+          <input type="number" id="topupAmount" inputmode="numeric" min="{{ (int) config('services.qris.min_amount', 10000) }}" step="1000" placeholder="Contoh: 50000">
+        </div>
+        <p class="tbl-info" style="margin-top:8px">Minimal Rp {{ number_format((int) config('services.qris.min_amount', 10000), 0, ',', '.') }}. Scan QRIS setelah nomor tampil.</p>
+      </div>
+      <div id="topupQrWrap" class="qris-wrap" hidden>
+        <canvas id="topupQrCanvas"></canvas>
+        <div class="qris-amount" id="topupQrAmount"></div>
+        <p class="qris-status" id="topupQrStatus">Menunggu pembayaran…</p>
+        <p class="qris-hint">Bayar dengan aplikasi e-wallet atau mobile banking yang mendukung QRIS. Jangan tutup halaman ini sampai pembayaran selesai.</p>
+      </div>
+    </div>
+    <div class="modal-foot" style="display:flex;flex-direction:column;gap:8px">
+      <button type="button" class="submit-btn" id="topupGenerateBtn" onclick="generateTopupQris()" style="margin-top:0">
+        Buat QRIS
+      </button>
+      <button type="button" class="btn-close-full" id="topupCheckBtn" onclick="checkTopupStatus(true)" hidden>Cek pembayaran</button>
+      <button type="button" class="btn-close-full" onclick="closeTopupModal()">Tutup</button>
+    </div>
+  </div>
+</div>
 
 <div id="installModal" class="modal-bg">
   <div class="modal-box" style="max-width:420px">
@@ -1119,6 +1167,7 @@ window.addEventListener('click', e => {
   if (e.target.id === 'paymentModal') closePaymentModal();
   if (e.target.id === 'multiAkunModal') closeMultiAkunModal();
   if (e.target.id === 'installModal') closeInstallModal();
+  if (e.target.id === 'topupModal') closeTopupModal();
 });
 
 document.getElementById('billForm').addEventListener('submit', e => {
@@ -1142,6 +1191,9 @@ const siswaBayar = {
 };
 const viewOnly = @json($viewOnly);
 const generateVaUrl = @json(route('generate-va'));
+const qrisGenerateUrl = @json(route('qris.generate'));
+const qrisStatusUrl = @json(route('qris.status'));
+const qrisMinAmount = @json((int) config('services.qris.min_amount', 10000));
 const multiAkunTambahUrl = @json(route('multi-akun.tambah'));
 const multiAkunHapusUrl = @json(route('multi-akun.hapus'));
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -1800,6 +1852,147 @@ function fallbackCopy(va, done) {
   document.execCommand('copy');
   t.remove();
   done();
+}
+
+let topupPollTimer = null;
+
+function formatSaldoText(n) {
+  return 'Rp ' + (parseInt(n, 10) || 0).toLocaleString('id-ID');
+}
+
+function setSaldoDisplay(n) {
+  siswaBayar.saldo = parseInt(n, 10) || 0;
+  const el = document.getElementById('saldoVaText');
+  if (el) el.textContent = formatSaldoText(siswaBayar.saldo);
+}
+
+function stopTopupPoll() {
+  if (topupPollTimer) {
+    clearInterval(topupPollTimer);
+    topupPollTimer = null;
+  }
+}
+
+function resetTopupModal() {
+  stopTopupPoll();
+  const formWrap = document.getElementById('topupFormWrap');
+  const qrWrap = document.getElementById('topupQrWrap');
+  const genBtn = document.getElementById('topupGenerateBtn');
+  const checkBtn = document.getElementById('topupCheckBtn');
+  const amount = document.getElementById('topupAmount');
+  if (formWrap) formWrap.hidden = false;
+  if (qrWrap) qrWrap.hidden = true;
+  if (genBtn) { genBtn.hidden = false; genBtn.disabled = false; genBtn.textContent = 'Buat QRIS'; }
+  if (checkBtn) checkBtn.hidden = true;
+  if (amount) amount.value = '';
+}
+
+function openTopupModal() {
+  const modal = document.getElementById('topupModal');
+  if (!modal) return;
+  resetTopupModal();
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTopupModal() {
+  const modal = document.getElementById('topupModal');
+  if (!modal) return;
+  stopTopupPoll();
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function generateTopupQris() {
+  const input = document.getElementById('topupAmount');
+  const amount = parseInt(String(input?.value || '').replace(/\D+/g, ''), 10) || 0;
+  if (amount < qrisMinAmount) {
+    Swal.fire({ icon: 'warning', title: 'Nominal terlalu kecil', text: 'Minimal top up ' + formatSaldoText(qrisMinAmount) + '.', ...swalTheme() });
+    return;
+  }
+  const btn = document.getElementById('topupGenerateBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Membuat QRIS...'; }
+  try {
+    const res = await fetch(qrisGenerateUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ amount, saldo: siswaBayar.saldo || 0 })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.status) {
+      const errMsg = data.message || (data.errors && data.errors.amount && data.errors.amount[0]) || 'Silakan coba lagi.';
+      Swal.fire({ icon: 'error', title: 'Gagal membuat QRIS', text: errMsg, ...swalTheme() });
+      if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+      return;
+    }
+    const raw = data.data?.rawQrData || '';
+    if (!raw) {
+      Swal.fire({ icon: 'error', title: 'Gagal membuat QRIS', text: 'Data QR kosong.', ...swalTheme() });
+      if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+      return;
+    }
+    const canvas = document.getElementById('topupQrCanvas');
+    if (window.QRCode && canvas) {
+      try {
+        await QRCode.toCanvas(canvas, raw, { width: 220, margin: 1, errorCorrectionLevel: 'M' });
+      } catch (qrErr) {
+        Swal.fire({ icon: 'error', title: 'Gagal menampilkan QR', text: 'Data QR tidak bisa digambar.', ...swalTheme() });
+        if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+        return;
+      }
+    }
+    document.getElementById('topupQrAmount').textContent = formatSaldoText(data.data.amount);
+    document.getElementById('topupQrStatus').textContent = 'Menunggu pembayaran…';
+    document.getElementById('topupFormWrap').hidden = true;
+    document.getElementById('topupQrWrap').hidden = false;
+    if (btn) btn.hidden = true;
+    const checkBtn = document.getElementById('topupCheckBtn');
+    if (checkBtn) checkBtn.hidden = false;
+    stopTopupPoll();
+    topupPollTimer = setInterval(() => checkTopupStatus(false), 5000);
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Terjadi kesalahan', text: 'Gagal membuat QRIS. Coba beberapa saat lagi.', ...swalTheme() });
+    if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+  }
+}
+
+async function checkTopupStatus(manual) {
+  try {
+    const res = await fetch(qrisStatusUrl, {
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (typeof data.saldo !== 'undefined') setSaldoDisplay(data.saldo);
+    const statusEl = document.getElementById('topupQrStatus');
+    if (data.paid) {
+      stopTopupPoll();
+      if (statusEl) statusEl.textContent = 'Pembayaran diterima';
+      Swal.fire({ icon: 'success', title: 'Top up berhasil', text: 'Saldo VA sudah bertambah ' + formatSaldoText(data.amount || 0) + '.', ...swalTheme() });
+      closeTopupModal();
+      return;
+    }
+    if (data.expired) {
+      stopTopupPoll();
+      if (statusEl) statusEl.textContent = 'QRIS kedaluwarsa';
+      if (manual) {
+        Swal.fire({ icon: 'warning', title: 'QRIS kedaluwarsa', text: data.message || 'Generate ulang untuk top up.', ...swalTheme() });
+      }
+      return;
+    }
+    if (statusEl) statusEl.textContent = data.message || 'Menunggu pembayaran…';
+    if (manual && !data.paid) {
+      Swal.fire({ icon: 'info', title: 'Belum terbayar', text: 'Saldo belum bertambah. Selesaikan pembayaran QRIS, lalu cek lagi.', ...swalTheme() });
+    }
+  } catch (err) {
+    if (manual) {
+      Swal.fire({ icon: 'error', title: 'Gagal cek status', text: 'Coba beberapa saat lagi.', ...swalTheme() });
+    }
+  }
 }
 
 /* PWA */

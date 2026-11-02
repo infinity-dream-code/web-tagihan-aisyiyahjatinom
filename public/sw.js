@@ -30,6 +30,7 @@ function isApiOrForm(request, url) {
   if (url.pathname.startsWith('/cek-tagihan')) return true;
   if (url.pathname.startsWith('/pembayaran')) return true;
   if (url.pathname.startsWith('/list-tahun-akademik')) return true;
+  if (url.pathname.startsWith('/qris')) return true;
   return false;
 }
 

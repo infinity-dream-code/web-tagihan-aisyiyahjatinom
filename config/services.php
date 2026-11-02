@@ -41,4 +41,13 @@ return [
         'url' => env('WS_TAGIHAN_URL', 'http://103.23.103.43/WEB_TAGIHAN_PROJECT/WS_TAGIHAN_AISYIYAH_JATINOM/index.php'),
     ],
 
+    'qris' => [
+        'url' => env('QRIS_URL', 'http://103.23.103.43/qris/lazizmu_diy/server.php'),
+        'jwt_key' => env('QRIS_JWT_KEY', 'TokenJWT_BMI_ICT'),
+        'account_no' => env('QRIS_ACCOUNT_NO', '5080010295'),
+        'mitra_customer_id' => env('QRIS_MITRA_CUSTOMER_ID', 'ISLAMIC CENTER SMG451061'),
+        'min_amount' => (int) env('QRIS_MIN_AMOUNT', 10000),
+        'ttl_minutes' => (int) env('QRIS_TTL_MINUTES', 15),
+    ],
+
 ];

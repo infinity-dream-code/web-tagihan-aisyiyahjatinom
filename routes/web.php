@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TagihanController;
 use App\Http\Controllers\MultiAccountController;
+use App\Http\Controllers\QrisController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
@@ -79,6 +80,9 @@ Route::post('/', [TagihanController::class, 'cek2'])->name('tagihan.cek2');
 Route::post('/multi-akun/tambah', [MultiAccountController::class, 'tambah'])->name('multi-akun.tambah');
 Route::post('/multi-akun/switch', [MultiAccountController::class, 'switch'])->name('multi-akun.switch');
 Route::post('/multi-akun/hapus', [MultiAccountController::class, 'hapus'])->name('multi-akun.hapus');
+
+Route::post('/qris/generate', [QrisController::class, 'generate'])->name('qris.generate');
+Route::get('/qris/status', [QrisController::class, 'status'])->name('qris.status');
 
 Route::get('/tagihan/view', [TagihanController::class, 'tagihanView'])->name('tagihan.view');
 
