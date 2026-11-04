@@ -1351,7 +1351,18 @@ async function hapusMultiAkun(noCust, namaHint) {
       showMaError(data.message || 'Gagal menghapus akun');
       return;
     }
-    renderMultiAkunList(data.data?.accounts || []);
+    const payload = data.data || {};
+    if (payload.logout) {
+      showMaSuccess(data.message || 'Akun dihapus. Tidak ada akun tersisa.');
+      setTimeout(() => logoutAkun(), 600);
+      return;
+    }
+    if (payload.switched && payload.active_no_cust) {
+      showMaSuccess(data.message || 'Akun aktif dihapus. Beralih ke akun lain…');
+      setTimeout(() => switchMultiAkun(payload.active_no_cust), 400);
+      return;
+    }
+    renderMultiAkunList(payload.accounts || []);
     showMaSuccess(data.message || 'Akun berhasil dihapus dari multi akun');
   } catch (err) {
     showMaError('Terjadi kesalahan jaringan');

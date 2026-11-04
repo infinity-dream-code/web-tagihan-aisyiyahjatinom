@@ -149,11 +149,12 @@ class MultiAccountController extends Controller
             ], 401);
         }
 
-        $activeNoCust = $session['active_no_cust'];
+        $activeNoCust = TagihanController::normalizeVa($session['active_no_cust']);
         $activeVaDisplay = $session['va_display'] ?? $activeNoCust;
         $activeYear = 'all';
+        $targetNoCust = TagihanController::normalizeVa($request->no_cust);
 
-        $removed = MultiAccountService::hapusViaWs($activeNoCust, $request->no_cust);
+        $removed = MultiAccountService::hapusViaWs($activeNoCust, $targetNoCust);
 
         if (empty($removed['status'])) {
             return response()->json([
@@ -162,9 +163,71 @@ class MultiAccountController extends Controller
             ], 422);
         }
 
+        $accounts = collect($removed['members'] ?? [])->values();
+        $removedNoCust = TagihanController::normalizeVa(
+            $removed['removed_no_cust'] ?? $targetNoCust
+        );
+        $deletedWasActive = $removedNoCust !== '' && $removedNoCust === $activeNoCust;
+
+        if ($deletedWasActive && $accounts->isEmpty()) {
+            session()->forget('tagihan');
+
+            return response()->json([
+                'status' => true,
+                'message' => $removed['message'] ?? 'Akun aktif dihapus. Sesi berakhir karena tidak ada akun tersisa.',
+                'data' => [
+                    'group_id' => null,
+                    'accounts' => [],
+                    'active_no_cust' => null,
+                    'removed_no_cust' => $removedNoCust,
+                    'logout' => true,
+                    'switched' => false,
+                ],
+            ]);
+        }
+
+        $sessionNoCust = $activeNoCust;
+        $sessionVaDisplay = $activeVaDisplay;
+        $switched = false;
+
+        if ($deletedWasActive) {
+            $next = $accounts->first(function ($acc) use ($removedNoCust) {
+                if (! is_array($acc)) {
+                    return false;
+                }
+                $candidate = TagihanController::normalizeVa($acc['no_cust'] ?? '');
+
+                return $candidate !== '' && $candidate !== $removedNoCust;
+            }) ?? $accounts->first();
+
+            if (is_array($next)) {
+                $sessionNoCust = TagihanController::normalizeVa($next['no_cust'] ?? '');
+                $sessionVaDisplay = $next['va_display']
+                    ?? TagihanController::formatNova($sessionNoCust);
+                $switched = $sessionNoCust !== '';
+            }
+        }
+
+        if ($sessionNoCust === '') {
+            session()->forget('tagihan');
+
+            return response()->json([
+                'status' => true,
+                'message' => $removed['message'] ?? 'Akun berhasil dihapus dari multi akun',
+                'data' => [
+                    'group_id' => null,
+                    'accounts' => $accounts,
+                    'active_no_cust' => null,
+                    'removed_no_cust' => $removedNoCust,
+                    'logout' => true,
+                    'switched' => false,
+                ],
+            ]);
+        }
+
         MultiAccountService::putSession(
-            $activeNoCust,
-            $activeVaDisplay,
+            $sessionNoCust,
+            $sessionVaDisplay,
             $activeYear,
             $removed['group_id'] ?? null
         );
@@ -174,9 +237,11 @@ class MultiAccountController extends Controller
             'message' => $removed['message'] ?? 'Akun berhasil dihapus dari multi akun',
             'data' => [
                 'group_id' => $removed['group_id'] ?? null,
-                'accounts' => ($removed['members'] ?? collect())->values(),
-                'active_no_cust' => $removed['active_no_cust'] ?? $activeNoCust,
-                'removed_no_cust' => $removed['removed_no_cust'] ?? null,
+                'accounts' => $accounts,
+                'active_no_cust' => $sessionNoCust,
+                'removed_no_cust' => $removedNoCust,
+                'logout' => false,
+                'switched' => $switched,
             ],
         ]);
     }
