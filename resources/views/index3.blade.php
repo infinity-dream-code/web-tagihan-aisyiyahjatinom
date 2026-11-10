@@ -40,7 +40,7 @@ if ('serviceWorker' in navigator) {
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 @endif
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -120,11 +120,21 @@ html.dark .submit-btn{color:#052e16}
 .btn-topup{flex-shrink:0;min-height:34px;padding:0 10px;border-radius:9px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
 .btn-topup:hover{background:var(--accent);color:#fff}
 html.dark .btn-topup:hover{color:#052e16}
-.qris-wrap{text-align:center;padding:.35rem 0}
-.qris-wrap canvas,.qris-wrap img{width:220px;height:220px;margin:0 auto;display:block;background:#fff;border-radius:12px;padding:8px}
-.qris-amount{font-size:1.15rem;font-weight:700;color:var(--accent);margin:.65rem 0 .25rem}
-.qris-status{font-size:13px;color:var(--text2);margin:0}
-.qris-hint{font-size:12px;color:var(--text3);line-height:1.5;margin:.5rem 0 0}
+.topup-modal{max-width:420px}
+.topup-foot{display:flex;flex-direction:column;gap:8px}
+.topup-foot .submit-btn{margin-top:0}
+.topup-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.topup-chip{min-height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:700;cursor:pointer}
+.topup-chip:hover,.topup-chip.is-on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.qris-wrap{text-align:center;padding:.15rem 0 .25rem}
+.qris-card{width:min(100%,280px);margin:0 auto;background:#fff;border-radius:20px;padding:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.qris-card canvas{width:100%;height:auto;display:block;background:#fff}
+.qris-amount{font-size:1.65rem;font-weight:800;letter-spacing:-.02em;color:var(--accent);margin:.9rem 0 .45rem;font-variant-numeric:tabular-nums}
+.qris-status-row{display:inline-flex;align-items:center;gap:8px;margin:0 auto;padding:6px 12px;border-radius:999px;background:var(--accent-soft);border:1px solid var(--border)}
+.qris-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(21,128,61,.6);animation:qris-pulse 1.6s ease-out infinite}
+.qris-status{font-size:13px;font-weight:650;color:var(--text);margin:0}
+.qris-hint{font-size:12.5px;color:var(--text3);line-height:1.55;margin:.75rem auto 0;max-width:32ch}
+@keyframes qris-pulse{70%{box-shadow:0 0 0 7px rgba(21,128,61,0)}100%{box-shadow:0 0 0 0 rgba(21,128,61,0)}}
 .btn-copy{min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer}
 .btn-copy:hover{background:var(--accent);color:#fff}
 html.dark .btn-copy:hover{color:#052e16}
@@ -696,7 +706,7 @@ h1{font-size:1.15rem}
 @endunless
 
 <div id="topupModal" class="modal-bg">
-  <div class="modal-box" style="max-width:440px">
+  <div class="modal-box topup-modal">
     <div class="modal-head">
       <h3>Top up saldo VA</h3>
       <button class="modal-x" onclick="closeTopupModal()" aria-label="Tutup" type="button">
@@ -707,22 +717,32 @@ h1{font-size:1.15rem}
       <div id="topupFormWrap">
         <div class="field" style="margin-bottom:0">
           <label>Nominal top up <em>*</em></label>
-          <input type="number" id="topupAmount" inputmode="numeric" min="{{ (int) config('services.qris.min_amount', 10000) }}" step="1000" placeholder="Contoh: 50000">
+          <input type="number" id="topupAmount" inputmode="numeric" min="{{ (int) config('services.qris.min_amount', 10000) }}" step="1000" placeholder="Contoh: 50000" oninput="markTopupChip(this.value)">
         </div>
-        <p class="tbl-info" style="margin-top:8px">Minimal Rp {{ number_format((int) config('services.qris.min_amount', 10000), 0, ',', '.') }}. Scan QRIS setelah nomor tampil.</p>
+        <div class="topup-chips" role="group" aria-label="Nominal cepat">
+          @foreach([10000 => '10rb', 20000 => '20rb', 50000 => '50rb', 100000 => '100rb'] as $nominal => $label)
+            <button type="button" class="topup-chip" data-amount="{{ $nominal }}" onclick="setTopupAmount({{ $nominal }}, this)">{{ $label }}</button>
+          @endforeach
+        </div>
+        <p class="tbl-info" style="margin-top:10px">Minimal Rp {{ number_format((int) config('services.qris.min_amount', 10000), 0, ',', '.') }}. QRIS muncul setelah nominal dipilih.</p>
       </div>
       <div id="topupQrWrap" class="qris-wrap" hidden>
-        <canvas id="topupQrCanvas"></canvas>
+        <div class="qris-card">
+          <canvas id="topupQrCanvas"></canvas>
+        </div>
         <div class="qris-amount" id="topupQrAmount"></div>
-        <p class="qris-status" id="topupQrStatus">Menunggu pembayaran…</p>
-        <p class="qris-hint">Bayar dengan aplikasi e-wallet atau mobile banking yang mendukung QRIS. Jangan tutup halaman ini sampai pembayaran selesai.</p>
+        <div class="qris-status-row">
+          <span class="qris-dot" aria-hidden="true"></span>
+          <p class="qris-status" id="topupQrStatus">Menunggu pembayaran…</p>
+        </div>
+        <p class="qris-hint">Scan dengan e-wallet atau m-banking. Biarkan halaman ini terbuka sampai pembayaran selesai.</p>
       </div>
     </div>
-    <div class="modal-foot" style="display:flex;flex-direction:column;gap:8px">
-      <button type="button" class="submit-btn" id="topupGenerateBtn" onclick="generateTopupQris()" style="margin-top:0">
+    <div class="modal-foot topup-foot">
+      <button type="button" class="submit-btn" id="topupGenerateBtn" onclick="generateTopupQris()">
         Buat QRIS
       </button>
-      <button type="button" class="btn-close-full" id="topupCheckBtn" onclick="checkTopupStatus(true)" hidden>Cek pembayaran</button>
+      <button type="button" class="submit-btn" id="topupCheckBtn" onclick="checkTopupStatus(true)" hidden>Cek pembayaran</button>
       <button type="button" class="btn-close-full" onclick="closeTopupModal()">Tutup</button>
     </div>
   </div>
@@ -1885,6 +1905,21 @@ function resetTopupModal() {
   if (genBtn) { genBtn.hidden = false; genBtn.disabled = false; genBtn.textContent = 'Buat QRIS'; }
   if (checkBtn) checkBtn.hidden = true;
   if (amount) amount.value = '';
+  markTopupChip('');
+}
+
+function setTopupAmount(amount, btn) {
+  const input = document.getElementById('topupAmount');
+  if (input) input.value = amount;
+  document.querySelectorAll('.topup-chip').forEach(chip => chip.classList.remove('is-on'));
+  if (btn) btn.classList.add('is-on');
+}
+
+function markTopupChip(value) {
+  const current = parseInt(String(value || '').replace(/\D+/g, ''), 10) || 0;
+  document.querySelectorAll('.topup-chip').forEach(chip => {
+    chip.classList.toggle('is-on', parseInt(chip.dataset.amount, 10) === current);
+  });
 }
 
 function openTopupModal() {
@@ -1937,14 +1972,25 @@ async function generateTopupQris() {
       return;
     }
     const canvas = document.getElementById('topupQrCanvas');
-    if (window.QRCode && canvas) {
-      try {
-        await QRCode.toCanvas(canvas, raw, { width: 220, margin: 1, errorCorrectionLevel: 'M' });
-      } catch (qrErr) {
-        Swal.fire({ icon: 'error', title: 'Gagal menampilkan QR', text: 'Data QR tidak bisa digambar.', ...swalTheme() });
-        if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
-        return;
-      }
+    if (!canvas || typeof QRious === 'undefined') {
+      Swal.fire({ icon: 'error', title: 'Gagal menampilkan QR', text: 'Library QRious belum termuat.', ...swalTheme() });
+      if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+      return;
+    }
+    try {
+      new QRious({
+        element: canvas,
+        value: raw,
+        size: 280,
+        level: 'M',
+        background: '#ffffff',
+        foreground: '#111111',
+        padding: 16
+      });
+    } catch (qrErr) {
+      Swal.fire({ icon: 'error', title: 'Gagal menampilkan QR', text: 'Data QR tidak bisa digambar.', ...swalTheme() });
+      if (btn) { btn.disabled = false; btn.textContent = 'Buat QRIS'; }
+      return;
     }
     document.getElementById('topupQrAmount').textContent = formatSaldoText(data.data.amount);
     document.getElementById('topupQrStatus').textContent = 'Menunggu pembayaran…';

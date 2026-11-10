@@ -1,0 +1,77 @@
+[2026-08-29 01:51:53] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"2,3","billam":25000}
+[2026-08-29 01:51:53] insertVA BILLTOT failed, retry without {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 01:51:53] insertVA failed {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'","params":{":custid":1,":nocust":"123456789",":namacust":"NOVIA",":nova":"123456789",":arrayTagihan":"2,3",":billam":"25000"}}
+[2026-08-29 01:55:00] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"2,3","billam":250000,"billam_type":"integer"}
+[2026-08-29 01:55:00] insert with BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 01:55:00] insert without BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 01:55:00] insertVA ok NOVA unik {"nova":"1234567892608290001"}
+[2026-08-29 02:01:18] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"3","billam":15000,"billam_type":"integer"}
+[2026-08-29 02:01:18] insert with BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 02:01:18] insert without BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 02:01:18] insertVA failed, NOVA harus sama dengan NOCUST {"nocust":"123456789"}
+[2026-08-29 02:01:22] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"3","billam":15000,"billam_type":"integer"}
+[2026-08-29 02:01:22] insert with BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 02:01:22] insert without BILLTOT exception {"error":"SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'scctva.NOVA'"}
+[2026-08-29 02:01:22] insertVA failed, NOVA harus sama dengan NOCUST {"nocust":"123456789"}
+[2026-08-29 02:06:23] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"3","billam":15000,"billam_type":"integer"}
+[2026-08-29 02:06:23] insertVA ok {"nova":"123456789","arrayTagihan":"3","billam":"15000","billtot":15000}
+[2026-09-02 07:34:26] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"2,3","billam":2000,"billam_type":"integer"}
+[2026-09-02 07:34:26] insertVA ok {"nova":"123456789","arrayTagihan":"2,3","billam":"700,1300","billtot":2000}
+[2026-09-02 08:06:19] insertVA start {"custid":2,"nocust":"1234567801","namacust":"FULAN 1","arrayTagihan":"4","billam":20000,"billam_type":"integer"}
+[2026-09-02 08:06:19] insertVA ok {"nova":"1234567801","arrayTagihan":"4","billam":"20000","billtot":20000}
+[2026-09-02 08:19:04] insertVA start {"custid":12,"nocust":"1234567809","namacust":"FULAN 9","arrayTagihan":"9,11,13","billam":500000,"billam_type":"integer"}
+[2026-09-02 08:19:04] insertVA ok {"nova":"1234567809","arrayTagihan":"9,11,13","billam":"40000,60000,400000","billtot":500000}
+[2026-09-02 08:32:56] insertVA start {"custid":12,"nocust":"1234567809","namacust":"FULAN 9","arrayTagihan":"5,9","billam":20000,"billam_type":"integer"}
+[2026-09-02 08:32:56] insertVA ok {"nova":"1234567809","arrayTagihan":"5,9","billam":"10000,10000","billtot":20000}
+[2026-09-02 08:34:34] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"2,3","billam":208000,"billam_type":"integer"}
+[2026-09-02 08:34:34] insertVA ok {"nova":"123456789","arrayTagihan":"2,3","billam":"74300,133700","billtot":208000}
+[2026-09-02 08:36:42] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"2,3","billam":208000,"billam_type":"integer"}
+[2026-09-02 08:36:42] insertVA ok {"nova":"123456789","arrayTagihan":"2,3","billam":"74300,133700","billtot":208000}
+[2026-09-02 08:42:51] insertVA start {"custid":8,"nocust":"1234567805","namacust":"FULAN 5","arrayTagihan":"14","billam":100000,"billam_type":"integer"}
+[2026-09-02 08:42:51] insertVA ok {"nova":"1234567805","arrayTagihan":"14","billam":"100000","billtot":100000}
+[2026-09-02 08:44:17] insertVA start {"custid":8,"nocust":"1234567805","namacust":"FULAN 5","arrayTagihan":"14","billam":100000,"billam_type":"integer"}
+[2026-09-02 08:44:17] insertVA ok {"nova":"1234567805","arrayTagihan":"14","billam":"100000","billtot":100000}
+[2026-09-02 08:45:17] insertVA start {"custid":8,"nocust":"1234567805","namacust":"FULAN 5","arrayTagihan":"14,16,18","billam":750000,"billam_type":"integer"}
+[2026-09-02 08:45:17] insertVA ok {"nova":"1234567805","arrayTagihan":"14,16,18","billam":"100000,150000,500000","billtot":750000}
+[2026-09-02 08:46:12] insertVA start {"custid":8,"nocust":"1234567805","namacust":"FULAN 5","arrayTagihan":"14,16","billam":150000,"billam_type":"integer"}
+[2026-09-02 08:46:12] insertVA ok {"nova":"1234567805","arrayTagihan":"14,16","billam":"50000,100000","billtot":150000}
+[2026-09-02 08:47:59] insertVA start {"custid":2,"nocust":"1234567801","namacust":"FULAN 1","arrayTagihan":"6","billam":10000,"billam_type":"integer"}
+[2026-09-02 08:47:59] insertVA ok {"nova":"1234567801","arrayTagihan":"6","billam":"10000","billtot":10000}
+[2026-09-02 08:51:29] insertVA start {"custid":8,"nocust":"1234567805","namacust":"FULAN 5","arrayTagihan":"14,16","billam":100000,"billam_type":"integer"}
+[2026-09-02 08:51:29] insertVA ok {"nova":"1234567805","arrayTagihan":"14,16","billam":"50000,50000","billtot":100000}
+[2026-09-02 09:44:16] insertVA start {"custid":13,"nocust":"1234567810","namacust":"SISWA BARU 1","arrayTagihan":"20","billam":150000,"billam_type":"integer"}
+[2026-09-02 09:44:16] insertVA ok {"nova":"1234567810","arrayTagihan":"20","billam":"150000","billtot":150000}
+[2026-09-02 09:54:37] insertVA start {"custid":15,"nocust":"1234567812","namacust":"SISWA BARU 3","arrayTagihan":"22,25","billam":1850000,"billam_type":"integer"}
+[2026-09-02 09:54:37] insertVA ok {"nova":"1234567812","arrayTagihan":"22,25","billam":"350000,1500000","billtot":1850000}
+[2026-09-02 11:14:33] insertVA start {"custid":2,"nocust":"1234567801","namacust":"FULAN 1","arrayTagihan":"4","billam":20000,"billam_type":"integer"}
+[2026-09-02 11:14:33] insertVA ok {"nova":"1234567801","arrayTagihan":"4","billam":"20000","billtot":20000}
+[2026-09-06 17:50:52] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"1,2","billam":350000,"billam_type":"integer"}
+[2026-09-06 17:50:52] insertVA ok {"nova":"123456789","arrayTagihan":"1,2","billam":"250000,100000","billtot":350000,"expDate":null}
+[2026-09-06 17:51:25] insertVA start {"custid":1,"nocust":"123456789","namacust":"NOVIA","arrayTagihan":"1,2","billam":340000,"billam_type":"integer"}
+[2026-09-06 17:51:25] insertVA ok {"nova":"123456789","arrayTagihan":"1,2","billam":"250000,90000","billtot":340000,"expDate":null}
+[2026-09-11 11:08:07] insertVA start {"custid":22,"nocust":"1234567819","namacust":"VINA","arrayTagihan":"33,36","billam":300000,"billam_type":"integer"}
+[2026-09-11 11:08:07] insertVA ok {"nova":"1234567819","arrayTagihan":"33,36","billam":"250000,50000","billtot":300000,"expDate":"2026-09-16 23:59:59"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:17:06] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.AA' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.AA = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-16 11:22:15] detail fetch failed {"error":"SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.BILLCD' in 'where clause'","sql":"SELECT t.TRXDATE, t.METODE, t.DEBET, t.KREDIT, t.NOREFF, t.TRANSNO, t.BILLTARGET, t.INSTALLMENT FROM sccttran t WHERE t.CUSTID = ? AND t.BILLCD = ? ORDER BY t.TRXDATE DESC"}
+[2026-09-17 09:17:07] insertVA start {"custid":22,"nocust":"1234567819","namacust":"VINA","arrayTagihan":"36","billam":250000,"billam_type":"integer"}
+[2026-09-17 09:17:08] insertVA ok {"nova":"1234567819","arrayTagihan":"36","billam":"250000","billtot":250000,"expDate":"2026-12-31 23:59:59"}
+[2026-09-19 12:45:32] insertVA start {"custid":2,"nocust":"1234567801","namacust":"FULAN 1","arrayTagihan":"31","billam":350000,"billam_type":"integer"}
+[2026-09-19 12:45:32] insertVA ok {"nova":"1234567801","arrayTagihan":"31","billam":"350000","billtot":350000,"expDate":"2026-09-20 23:59:59"}
